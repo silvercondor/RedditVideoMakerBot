@@ -2,6 +2,7 @@
 import multiprocessing
 import os
 import re
+import json
 from os.path import exists
 from typing import Tuple, Any
 from moviepy.audio.AudioClip import concatenate_audioclips, CompositeAudioClip
@@ -62,7 +63,7 @@ def make_final_video(
     # except (TypeError, KeyError):
     #    print('No background audio volume found in config.toml. Using default value of 1.')
     #    VOLUME_MULTIPLIER = 1
-    id = re.sub(r"[^\w\s-]", "", reddit_obj["thread_id"])
+    id = re.sub(r"[^\w\s-]", "", reddit_obj["thread_id"])    
     print_step("Creating the final video 🎥")
     VideoFileClip.reW = lambda clip: clip.resize(width=W)
     VideoFileClip.reH = lambda clip: clip.resize(width=H)
@@ -140,9 +141,11 @@ def make_final_video(
     #    # lowered_audio = audio_background.multiply_volume( # todo get this to work
     #    #    VOLUME_MULTIPLIER)  # lower volume by background_audio_volume, use with fx
     #    final.set_audio(final_audio)
-    final = Video(final).add_watermark(
-        text=f"Background credit: {background_config[2]}", opacity=0.4, redditid=reddit_obj
-     )
+
+    #Add watermark
+    # final = Video(final).add_watermark(
+    #     text=f"Background credit: {background_config[2]}", opacity=0.4, redditid=reddit_obj
+    #  )
     final.write_videofile(
         f"assets/temp/{id}/temp.mp4",
         fps=30,
@@ -157,6 +160,11 @@ def make_final_video(
         length,
         targetname=f"results/{subreddit}/{filename}",
     )
+
+    
+    #Save reddit_obj to json
+    json.dump(reddit_obj, open(f"assets/temp/{id}/thread.json",'w'))
+
     save_data(subreddit, filename, title, idx, background_config[2])
     print_step("Removing temporary files 🗑")
     cleanups = cleanup(id)
